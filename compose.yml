@@ -6,9 +6,11 @@ services:
       POSTGRES_USER: keycloak_user
       POSTGRES_PASSWORD: keycloak_password
     volumes:
-      - ./postgres-keycloak-data:/var/lib/postgresql/data
+      - ./keycloak/postgres-keycloak-data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    networks:
+      - bio-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1
@@ -19,7 +21,7 @@ services:
       KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak_db
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_password
-    command: 
+    command:
       - start-dev
       - --import-realm
     volumes:
@@ -28,6 +30,35 @@ services:
       - "8080:8080"
     depends_on:
       - keycloak_db
+    networks:
+      - bio-network
+
+  openldap:
+    build:
+      context: ./ldap
+      dockerfile: Dockerfile
+    environment:
+      LDAP_DOMAIN: "example.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_TLS: "false"
+    ports:
+      - "389:389"
+    networks:
+      - bio-network
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+    ports:
+      - "6443:443"
+    depends_on:
+      - openldap
+    networks:
+      - bio-network
+  
+  #  report-api:
+
   frontend:
     build:
       context: ./frontend
@@ -36,6 +67,35 @@ services:
       - "3000:3000"
     environment:
       REACT_APP_API_URL: http://localhost:8000
-      REACT_APP_KEYCLOAK_URL: http://localhost:8080
-      REACT_APP_KEYCLOAK_REALM: reports-realm
-      REACT_APP_KEYCLOAK_CLIENT_ID: reports-frontend
+      REACT_APP_AUTH_URL: http://localhost:3001
+    networks:
+      - bio-network
+  
+  bionicpro-auth:
+    build:
+      context: ./bionicpro-auth
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - keycloak
+    environment:
+      PORT: "3001"
+      FRONTEND_URL: "http://localhost:3000"
+      REPORTS_API_URL: "http://localhost:8000"
+      KEYCLOAK_PUBLIC_URL: "http://localhost:8080"
+      KEYCLOAK_INTERNAL_URL: "http://keycloak:8080"
+      KEYCLOAK_REALM: "reports-realm"
+      KEYCLOAK_CLIENT_ID: "bionicpro-auth"
+      KEYCLOAK_CLIENT_SECRET: "AtRPxPz5EK5JoUX2grWUMf92mYn0hu6s"
+      COOKIE_NAME: "sid"
+      COOKIE_SECURE: "false"
+      SESSION_ROTATION: "true"
+      ACCESS_SKEW_SECONDS: "10"
+    networks:
+      - bio-network
+
+networks:
+  bio-network:
+    name: bio-network
+    driver: bridge
