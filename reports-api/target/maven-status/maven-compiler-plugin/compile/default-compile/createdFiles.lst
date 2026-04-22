@@ -1,0 +1,8 @@
+ru/shuvalovdn/reports/config/WebConfig.class
+ru/shuvalovdn/reports/ReportsApiApplication.class
+ru/shuvalovdn/reports/dto/ValidateResponse.class
+ru/shuvalovdn/reports/client/AuthSessionClient.class
+ru/shuvalovdn/reports/config/ClickHouseConfig.class
+ru/shuvalovdn/reports/controller/ReportController.class
+ru/shuvalovdn/reports/dto/DailyReportDto.class
+ru/shuvalovdn/reports/service/ReportService.class

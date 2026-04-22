@@ -1,0 +1,77 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0" version="29.0.3">
+  <diagram id="BionicPROReportsArch" name="Reports Architecture">
+    <mxGraphModel dx="778" dy="468" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="CRM (OLTP) PostgreSQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Telemetry DB Raw sensor data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="280" y="40" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="Apache Airflow ETL Orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="160" y="160" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="ETL Jobs (SQL / Spark / dbt)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="160" y="280" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="OLAP DB ClickHouse (Report Mart)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="160" y="400" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="Report Service API (BionicPRO Reports)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="160" y="520" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="Mobile / Web App Reports Frontend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="160" y="680" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="Auth / SSO (Keycloak / Auth Service)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="550" y="520" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="10" value="Extract CRM data" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" source="2" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="Extract telemetry" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" source="3" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" value="Schedule DAGs" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" source="4" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" value="Load aggregated features &amp; metrics" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" source="5" target="6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="14" value="Query report mart" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" source="6" target="7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="15" value="User-specific reports" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" edge="1">
+          <mxGeometry x="-0.5" y="10" relative="1" as="geometry">
+            <mxPoint x="290" y="600" as="sourcePoint" />
+            <mxPoint x="290" y="680" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="16" value="HTTP(S) API calls" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="210" y="680" as="sourcePoint" />
+            <mxPoint x="210" y="600" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="17" value="JWT / token introspection" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" edge="1">
+          <mxGeometry x="0.0476" y="34" relative="1" as="geometry">
+            <mxPoint x="340" y="584" as="sourcePoint" />
+            <mxPoint x="550" y="584" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="18" value="Validate user identity" style="endArrow=block;html=1;strokeColor=#000000;" parent="1" edge="1">
+          <mxGeometry x="-0.0476" y="30" relative="1" as="geometry">
+            <mxPoint x="550" y="540" as="sourcePoint" />
+            <mxPoint x="340" y="540" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
