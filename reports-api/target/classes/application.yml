@@ -1,0 +1,24 @@
+server:
+  port: 8000
+
+spring:
+  datasource:
+    clickhouse:
+      url: jdbc:clickhouse://clickhouse:9000/bionicpro_reports
+      username: default
+      password:
+
+logging:
+  level:
+    ru.shuvalovdn.reports.DemoApplication: DEBUG
+
+app:
+  auth:
+    validate-url: http://localhost:3001/sessions/validate
+  clickhouse:
+    url: jdbc:clickhouse://localhost:8123/reports?compress=0
+    user: default
+    password: ""
+
+reports:
+  allowed-origin: http://localhost:3000

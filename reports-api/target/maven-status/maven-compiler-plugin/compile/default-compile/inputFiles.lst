@@ -1,0 +1,8 @@
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/ReportsApiApplication.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/client/AuthSessionClient.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/config/ClickHouseConfig.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/config/WebConfig.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/controller/ReportController.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/dto/DailyReportDto.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/dto/ValidateResponse.java
+/Users/shuvalovden/Documents/projects/private/edu/yandex-practicum/architecture/architecture-bionicpro/reports-api/src/main/java/ru/shuvalovdn/reports/service/ReportService.java

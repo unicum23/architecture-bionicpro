@@ -1,2 +1,8 @@
-/postgres-keycloak-data
+/keycloak/postgres-keycloak-data
+/clickhouse/clickhouse-data
+/airflow/postgres-airflow-data
+/airflow/logs
+/airflow/plugins
+/crm/crm-postgres-data
+
 .idea

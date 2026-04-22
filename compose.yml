@@ -1,14 +1,16 @@
 services:
   keycloak_db:
-    image: postgres:14
+    image: postgres:15
     environment:
       POSTGRES_DB: keycloak_db
       POSTGRES_USER: keycloak_user
       POSTGRES_PASSWORD: keycloak_password
     volumes:
-      - ./postgres-keycloak-data:/var/lib/postgresql/data
+      - ./keycloak/postgres-keycloak-data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+    networks:
+      - bio-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1
@@ -19,7 +21,7 @@ services:
       KC_DB_URL: jdbc:postgresql://keycloak_db:5432/keycloak_db
       KC_DB_USERNAME: keycloak_user
       KC_DB_PASSWORD: keycloak_password
-    command: 
+    command:
       - start-dev
       - --import-realm
     volumes:
@@ -28,6 +30,33 @@ services:
       - "8080:8080"
     depends_on:
       - keycloak_db
+    networks:
+      - bio-network
+
+  openldap:
+    build:
+      context: ./ldap
+      dockerfile: Dockerfile
+    environment:
+      LDAP_DOMAIN: "example.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_TLS: "false"
+    ports:
+      - "389:389"
+    networks:
+      - bio-network
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+    ports:
+      - "6443:443"
+    depends_on:
+      - openldap
+    networks:
+      - bio-network
+
   frontend:
     build:
       context: ./frontend
@@ -36,6 +65,138 @@ services:
       - "3000:3000"
     environment:
       REACT_APP_API_URL: http://localhost:8000
-      REACT_APP_KEYCLOAK_URL: http://localhost:8080
-      REACT_APP_KEYCLOAK_REALM: reports-realm
-      REACT_APP_KEYCLOAK_CLIENT_ID: reports-frontend
+      REACT_APP_AUTH_URL: http://localhost:3001
+    networks:
+      - bio-network
+  
+  bionicpro-auth:
+    build:
+      context: ./bionicpro-auth
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - keycloak
+    environment:
+      PORT: "3001"
+      FRONTEND_URL: "http://localhost:3000"
+      REPORTS_API_URL: "http://localhost:8000"
+      KEYCLOAK_PUBLIC_URL: "http://localhost:8080"
+      KEYCLOAK_INTERNAL_URL: "http://keycloak:8080"
+      KEYCLOAK_REALM: "reports-realm"
+      KEYCLOAK_CLIENT_ID: "bionicpro-auth"
+      KEYCLOAK_CLIENT_SECRET: "AtRPxPz5EK5JoUX2grWUMf92mYn0hu6s"
+      COOKIE_NAME: "sid"
+      COOKIE_SECURE: "false"
+      SESSION_ROTATION: "true"
+      ACCESS_SKEW_SECONDS: "10"
+    networks:
+      - bio-network
+
+  postgres-airflow:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - ./airflow/postgres-airflow-data:/var/lib/postgresql/data
+    networks:
+      - bio-network
+
+  airflow-webserver:
+    image: apache/airflow:2.9.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: "something_fernet_key_base64"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+    command: >
+      bash -c "
+      airflow db upgrade &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+      exec airflow webserver
+      "
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres-airflow
+    networks:
+      - bio-network
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.0
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: "something_fernet_key_base64"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres-airflow:5432/airflow
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+    command: >
+      bash -c "
+      airflow db upgrade &&
+      exec airflow scheduler
+      "
+    depends_on:
+      - postgres-airflow
+      - airflow-webserver
+    networks:
+      - bio-network
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    ports:
+      - "8124:8123"
+      - "9000:9000"
+    volumes:
+      - ./clickhouse/clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse/users.d:/etc/clickhouse-server/users.d
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - bio-network
+
+  crm-postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: crm_password
+      POSTGRES_DB: crm
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./crm/crm-postgres-data:/var/lib/postgresql/data
+      - ./crm/init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    networks:
+      - bio-network
+
+  reports-api:
+    build:
+      context: ./reports-api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "5005:5005"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+    depends_on:
+      - clickhouse
+      - crm-postgres
+      - keycloak
+    networks:
+      - bio-network
+
+networks:
+  bio-network:
+    name: bio-network
+    driver: bridge
